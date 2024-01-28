@@ -17,13 +17,11 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 def main():
-    logger.debug("Starting main function")
     try:
         hyperliquid = HyperLiquid(logger)
         response = asyncio.run(hyperliquid.get_all_mids())
         if response:
             data = response.json()
-            logger.debug("Response from get_all_mids: %s", data)
             print("Response from get_all_mids:")
             print(data)
         else:

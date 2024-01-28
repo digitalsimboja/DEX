@@ -1,8 +1,10 @@
 """DEX Exchange Base"""
 import asyncio
 import logging
-from logging import Logger
 from typing import Optional
+import json
+import os
+from typing import Dict
 
 from api.dex_exchange_base import DEXExchangeBase
 from api.hyperliquid.constants import PATH_TO_HYPERLIQUID
@@ -37,7 +39,6 @@ class HyperLiquid(DEXExchangeBase):
     """
 
     _confi_data = get_config()
-    _hyperliquid_config = _confi_data["hyperliquid"]
 
     def __init__(self, logger: logging.Logger):
         super().__init__(
@@ -45,6 +46,7 @@ class HyperLiquid(DEXExchangeBase):
             api_qps=self._confi_data["api_qps"],
             logger=logger
         )
+        self._hyperliquid_config = self.load_config()
         self._base_rest_url = self._hyperliquid_config["base_url"]
         self._base_websocket_url = self._hyperliquid_config["websocket_url"]
         self._rest_endpoint_urls = self._hyperliquid_config["endpoints"]
@@ -68,6 +70,23 @@ class HyperLiquid(DEXExchangeBase):
             "Content-Type": "application/json"
         }
 
+    @staticmethod
+    def load_config() -> Dict:
+        """
+        Load the HyperLiquid-specific configuration from the 'hyperliquid_config.json' file.
+
+        Returns:
+            dict: A dictionary containing the configuration data.
+
+        Raises:
+            FileNotFoundError: If the 'hyperliquid_config.json' file is not found.
+            json.JSONDecodeError: If the file does not contain valid JSON data.
+        """
+        hyperliquid_config_path = os.path.join(
+            os.path.dirname(__file__), "hyperliquid_config.json")
+        with open(hyperliquid_config_path, "r") as config_file:
+            return json.load(config_file)
+
     @_redis_stream_manager.publish_result(_REDIS_STREAMS[StreamNames.PRICES])
     async def get_all_mids(self) -> Response:
         url = self.get_rest_endpoint_url("allMids")
@@ -76,10 +95,10 @@ class HyperLiquid(DEXExchangeBase):
         }
         try:
             response = self.session.post(url=url, json=body)
-            response.raise_for_status() 
-            print("Response status code:", response.status_code)
-            print("Response data:", response.json())
+            response.raise_for_status()
+            self.logger.info("Successfully retrieved all mids")
+            self.logger.debug("Response from get_all_mids: %s", response.json())
             return response
         except Exception as e:
-            print("Error in retrieving all mids:", e)
-            return None 
+            self.logger.error("Error in retrieving all mids", exc_info=True)
+            return None
