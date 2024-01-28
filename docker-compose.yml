@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis-broker
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis.conf:/redis.conf
+    command: redis-server /redis.conf
+
+  hyperliquid-marketdata-adapter:
+    build:
+      context: .
+      dockerfile: ./adapters/hyperliquid/Dockerfile
+    volumes:
+      - .:/app 
+    depends_on:
+      - redis
+
+  # vertex-marketdata-adapter:
+  #   build:
+  #     context: .
+  #     dockerfile: ./adapters/vertex/Dockerfile
+  #   depends_on:
+  #     - redis
+
+#  mm1:
+#    build:
+#      context: .
+#      dockerfile: ./bots/mm1/Dockerfile
+#    depends_on:
+#      - redis
+
+  # mm2:
+  #   build:
+  #     context: .
+  #     dockerfile: ./bots/mm2/Dockerfile
+  #   depends_on:
+  #     - redis

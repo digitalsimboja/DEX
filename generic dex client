@@ -1,0 +1,25 @@
+# imports
+
+_path_to_redis_configs = ""
+_redis_stream_manager = RedisStreamManager
+_redis_stream_names = ""
+
+class DexClient(DexExchangeBase):
+	def __init__(*args, **kwargs): 
+			"""..."""
+	
+	# properties 
+	@property
+	def example(self):
+		"""..."""	
+
+	# Endpoint Methods (example: get funding rates)
+	@_redis_stream_manager.publish_result(_redis_stream_names[StreamNames.FUNDING]))
+	def get_funding_rates(self, *args, **kwargs):
+		"""..."""
+
+	# Run Method
+	async def update_redis_forever(self):
+	        while True:
+	            await self.get_funding_rates()
+	            time.sleep(5)

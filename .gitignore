@@ -1,0 +1,6 @@
+.DS_Store
+_docs/technical_scope_lhava_rev2.pdf
+.venv/
+.idea/
+*.json
+*.pyc
