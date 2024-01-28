@@ -16,6 +16,7 @@ from utilities.config import get_config
 
 
 _PATH_TO_REDIS_CONFIG = PATH_TO_HYPERLIQUID / "redis_config.json"
+_PATH_TO_HYPERLIQUID_CONFIG = PATH_TO_HYPERLIQUID / "hyperliquid_config.json"
 _redis_stream_manager = RedisStreamManager.from_config(_PATH_TO_REDIS_CONFIG)
 
 _stream_name_builder = (
@@ -82,8 +83,7 @@ class HyperLiquid(DEXExchangeBase):
             FileNotFoundError: If the 'hyperliquid_config.json' file is not found.
             json.JSONDecodeError: If the file does not contain valid JSON data.
         """
-        hyperliquid_config_path = os.path.join(
-            os.path.dirname(__file__), "hyperliquid_config.json")
+        hyperliquid_config_path = _PATH_TO_HYPERLIQUID_CONFIG
         with open(hyperliquid_config_path, "r") as config_file:
             return json.load(config_file)
 

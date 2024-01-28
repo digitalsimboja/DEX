@@ -16,6 +16,7 @@ class Blockchains(Enum):
     SOLANA = "solana"
     ETHEREUM = "ethereum"
     COSMOS = "cosmos"
+    HYPERLIQUID = "hyperliquid"
 
 
 class DataType(Enum):

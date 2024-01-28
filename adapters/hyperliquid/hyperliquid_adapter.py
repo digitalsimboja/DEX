@@ -29,6 +29,7 @@ _REDIS_STREAMS = {
 
 
 class HyperliquidAdapter(RawDataAdapter):
+
     @_redis_stream_manager.publish_result(_REDIS_STREAMS["adapted"][StreamNames.PNL])
     async def example_method(self):
         await _redis_stream_manager.create_redis_consumer_group(
