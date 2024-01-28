@@ -37,16 +37,47 @@ class HyperLiquid(DEXExchangeBase):
     """
 
     _confi_data = get_config()
+    _hyperliquid_config = _confi_data["hyperliquid"]
 
     def __init__(self, logger: logging.Logger):
-        api_key = self._confi_data["api_key"]
-        api_qps = self._confi_data["api_qps"]
-        super().__init__(api_key, api_qps, logger)
+        super().__init__(
+            api_key=self._confi_data["api_key"],
+            api_qps=self._confi_data["api_qps"],
+            logger=logger
+        )
+        self._base_rest_url = self._hyperliquid_config["base_url"]
+        self._base_websocket_url = self._hyperliquid_config["websocket_url"]
+        self._rest_endpoint_urls = self._hyperliquid_config["endpoints"]
+
+    @property
+    def base_rest_url(self) -> str:
+        return self._base_rest_url
+
+    @property
+    def base_websocket_url(self) -> str:
+        return self._base_websocket_url
+
+    @property
+    def rest_endpoint_urls(self) -> dict[str, str]:
+        return self._rest_endpoint_urls
+
+    @property
+    def session_headers(self) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
 
     @_redis_stream_manager.publish_result(_REDIS_STREAMS[StreamNames.PRICES])
-    async def example_method(self) -> Response:
-        url = self.get_rest_endpoint_url("example_endpoint")
+    async def get_all_mids(self) -> Response:
+        url = self.get_rest_endpoint_url("allMids")
+        print(url)
+        body = {
+            "type": "allMids"
+        }
         response = self.session.post(
             url=url,
+            json=body,
         )
+        print("response to retrieve all mids: ", response)
         return response
