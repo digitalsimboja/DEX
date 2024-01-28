@@ -4,3 +4,5 @@ _docs/technical_scope_lhava_rev2.pdf
 .idea/
 *.json
 *.pyc
+
+logs/

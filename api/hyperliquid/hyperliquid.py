@@ -71,13 +71,15 @@ class HyperLiquid(DEXExchangeBase):
     @_redis_stream_manager.publish_result(_REDIS_STREAMS[StreamNames.PRICES])
     async def get_all_mids(self) -> Response:
         url = self.get_rest_endpoint_url("allMids")
-        print(url)
         body = {
             "type": "allMids"
         }
-        response = self.session.post(
-            url=url,
-            json=body,
-        )
-        print("response to retrieve all mids: ", response)
-        return response
+        try:
+            response = self.session.post(url=url, json=body)
+            response.raise_for_status() 
+            print("Response status code:", response.status_code)
+            print("Response data:", response.json())
+            return response
+        except Exception as e:
+            print("Error in retrieving all mids:", e)
+            return None 

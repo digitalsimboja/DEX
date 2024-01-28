@@ -8,4 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD [ "python", "data_client/hyperliquid/hyperliquid_client.py" ]
+ENV PYTHONPATH="/app:${PYTHONPATH}"
+
+CMD ["tail", "-f", "/dev/null"]

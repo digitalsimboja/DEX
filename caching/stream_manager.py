@@ -24,7 +24,9 @@ class RedisStreamManager(Redis):
         """
         with open(json_config_file_path, "rb") as f:
             configs = json.load(f)
-        connection_pool = ConnectionPool.from_url(**configs)
+        redis_url = f"redis://{configs['host']}:{configs['port']}/0"
+        # connection_pool = ConnectionPool.from_url(**configs)
+        connection_pool = ConnectionPool.from_url(redis_url)
         client = cls(
             connection_pool=connection_pool,
             single_connection_client=False,
