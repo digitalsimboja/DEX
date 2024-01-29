@@ -53,9 +53,9 @@ class DataConsumer(ABC):
     def get_stream_name(self, stream: StreamNames) -> str:
         """Return the desired stream's name to consumer inside redis"""
         name = self.redis_stream_builder.set("stream", stream).name
-        self.redis_stream_builder.set(
-            "stream", None
-        )  # ensure we reset the stream value in the builder
+        # self.redis_stream_builder.set(
+        #     "stream", None
+        # )  # ensure we reset the stream value in the builder
 
         return name
 

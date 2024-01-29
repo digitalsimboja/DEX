@@ -8,6 +8,7 @@ import logging
 import asyncio
 from data_client.data_client import DataConsumer
 from models.enums import Blockchains, Exchanges, StreamNames
+from utilities.common import generate_group_name
 
 os.makedirs('logs', exist_ok=True)
 
@@ -46,8 +47,8 @@ class HyperliquidClient(DataConsumer):
             await self.hyperliquid_adapter.get_oracle_prices()
             # Read the adapted data
             # TODO: Use the get_stream_name base function
-            stream_name = "adapted-hyperliquid-cosmos-pnl"
-            group_name = f"{stream_name}_consumer"
+            stream_name = self.get_stream_name(StreamNames.PNL)
+            group_name = await generate_group_name(stream_name)
             await self.redis.create_redis_consumer_group(
                 stream_name,
                 group_name,

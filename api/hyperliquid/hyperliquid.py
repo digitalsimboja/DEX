@@ -12,7 +12,8 @@ from caching.stream_manager import RedisStreamManager
 from caching.streams import StreamNameBuilder
 from models.enums import Blockchains, DataType, Exchanges, StreamNames
 from requests import Response
-from utilities.config import get_config
+from utilities.common import get_config
+from utilities.parsing import JsonParser
 
 
 _PATH_TO_REDIS_CONFIG = PATH_TO_HYPERLIQUID / "redis_config.json"
@@ -96,9 +97,9 @@ class HyperLiquid(DEXExchangeBase):
         try:
             response = self.session.post(url=url, json=body)
             response.raise_for_status()
-            self.logger.info("Successfully retrieved all mids")
-            self.logger.debug("Response from get_all_mids: %s", response.json())
-            return response
+            json_result = JsonParser.loads(response)
+            self.logger.debug("Response from get_all_mids: %s", json_result)
+            return json_result
         except Exception as e:
             self.logger.error("Error in retrieving all mids", exc_info=True)
             return None
