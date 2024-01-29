@@ -55,7 +55,7 @@ class RedisStreamManager(Redis):
 
                 # Convert the generic value into a json string
                 json_result = JsonParser.loads(result)
-
+                
                 # Publish the message to the specified Redis stream
                 await self.xadd(
                     stream_name,

@@ -5,6 +5,7 @@ from caching.streams import StreamNameBuilder
 from models.enums import Blockchains, DataType, Exchanges, StreamNames
 import pandas as pd
 import json
+from typing import Dict
 
 _PATH_TO_REDIS_CONFIG = PATH_TO_HYPERLIQUID / "redis_config.json"
 _redis_stream_manager = RedisStreamManager.from_config(_PATH_TO_REDIS_CONFIG)
@@ -46,7 +47,7 @@ class HyperliquidAdapter(RawDataAdapter):
         Example:
         {"BTC/USD" : 39874.58, "ETH/USD" : 2645.55, "ARB/USD": 1.77}
         """
-        group_name = "oracle_prices_of_actively_traded_coins"
+        group_name = f"{_REDIS_STREAMS['raw'][StreamNames.PRICES]}_consumer"
         await _redis_stream_manager.create_redis_consumer_group(
             _REDIS_STREAMS["raw"][StreamNames.PRICES],
             group_name,
@@ -61,9 +62,11 @@ class HyperliquidAdapter(RawDataAdapter):
         )
         # Extract prices from the data
         prices_data = data[0][1][0][1]
-    
+
+        # Format data to include the USD ticker
         # Convert bytes-like object keys and values to strings and floats respectively
-        oracle_prices = {f"{ticker.decode()}/USD": float(price.decode()) for ticker, price in prices_data.items()}
+        oracle_prices = {f"{ticker.decode()}/USD": float(price.decode())
+                         for ticker, price in prices_data.items()}
 
         return json.dumps(oracle_prices)
 

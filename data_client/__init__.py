@@ -1,5 +1,6 @@
 import json
-from abc import ABC
+from abc import ABC, abstractmethod
+from requests import Response
 
 from caching.stream_manager import RedisStreamManager
 

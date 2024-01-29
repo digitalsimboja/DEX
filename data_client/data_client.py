@@ -46,7 +46,8 @@ class DataConsumer(ABC):
             StreamNameBuilder()
             .set("marketplace", self.exchange)
             .set("blockchain", self.blockchain)
-            .set("data_type", DataType.ADAPTED)  # we only pull internally adapted data
+            # we only pull internally adapted data
+            .set("data_type", DataType.ADAPTED)
         )
 
     def get_stream_name(self, stream: StreamNames) -> str:
@@ -55,6 +56,7 @@ class DataConsumer(ABC):
         self.redis_stream_builder.set(
             "stream", None
         )  # ensure we reset the stream value in the builder
+
         return name
 
     @abstractmethod
