@@ -89,6 +89,7 @@ class HyperLiquid(DEXExchangeBase):
 
     @_redis_stream_manager.publish_result(_REDIS_STREAMS[StreamNames.PRICES])
     async def get_all_mids(self) -> Response:
+        print("Sending  to redis stream: ", _REDIS_STREAMS[StreamNames.PRICES])
         url = self.get_rest_endpoint_url("allMids")
         body = {
             "type": "allMids"

@@ -1,5 +1,6 @@
 import os
 from api.hyperliquid.hyperliquid import HyperLiquid
+from adapters.hyperliquid.hyperliquid_adapter import HyperliquidAdapter
 import logging
 import asyncio
 
@@ -16,14 +17,16 @@ handler.setFormatter(formatter)
 
 logger.addHandler(handler)
 
-def main():
+
+async def main():
     try:
         hyperliquid = HyperLiquid(logger)
-        response = asyncio.run(hyperliquid.get_all_mids())
+        response = await hyperliquid.get_all_mids()
         if response:
-            data = response.json()
-            print("Response from get_all_mids:")
-            print(data)
+            hyperliquid_adapter = HyperliquidAdapter()
+            processed_prices = await hyperliquid_adapter.get_oracle_prices()
+            logger.debug(
+                "Response from oracle processed_prices: %s", processed_prices)
         else:
             logger.error("Failed to retrieve all mids")
             print("Failed to retrieve all mids")
@@ -31,4 +34,4 @@ def main():
         logger.exception("An error occurred in the main function: %s", e)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
