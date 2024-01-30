@@ -36,7 +36,7 @@ _REDIS_STREAMS = {
 class HyperliquidAdapter(RawDataAdapter):
     def __init__(self):
         self.logger_config = SetupLogger(
-            'hyperliquid_adapter', 'logs/hyperliquid_adapter.log')
+            'hyperliquid_adapter', 'logs/hyperliquid/hyperliquid_adapter.log')
         self.logger = self.logger_config.create_logger()
 
     @_redis_stream_manager.publish_result(_REDIS_STREAMS["adapted"][StreamNames.PNL])

@@ -4,7 +4,7 @@ from utilities.logger import SetupLogger
 
 async def main():
     # Configure logger
-    logger_config = SetupLogger("hyperliquid_job_logger", "hyperliquid_job.log" )
+    logger_config = SetupLogger("hyperliquid_job_logger", "logs/hyperliquid/hyperliquid_job.log" )
     logger = logger_config.create_logger()
     hyperliquidAdapter = HyperliquidAdapter()
 

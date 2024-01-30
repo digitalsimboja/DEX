@@ -12,7 +12,7 @@ class HyperliquidConsumer(DataConsumer):
     def __init__(self, redis_url: str, exchange: Exchanges, blockchain: Blockchains):
         super().__init__(redis_url, exchange, blockchain)
         self.logger_config = SetupLogger(
-            'hyperliquid_data_consumer', 'logs/hyperliquid_data_consumer.log')
+            'hyperliquid_data_consumer', 'logs/hyperliquid/hyperliquid_data_consumer.log')
         self.logger = self.logger_config.create_logger()
 
     async def get_oracle_prices(self, *args, **kwargs) -> dict[str, float]:

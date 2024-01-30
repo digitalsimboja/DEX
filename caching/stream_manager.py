@@ -16,7 +16,7 @@ class RedisStreamManager(Redis):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger_config = SetupLogger(
-            'redis_stream', 'logs/redis_stream_manager.log')
+            'redis_stream', 'logs/streams/redis_stream_manager.log')
         self.logger = self.logger_config.create_logger()
 
     @classmethod

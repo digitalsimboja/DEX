@@ -7,7 +7,8 @@ class SetupLogger:
         self.log_file = log_file
     
     def create_logger(self):
-        os.makedirs('logs', exist_ok=True)
+        log_directory = os.path.dirname(self.log_file)
+        os.makedirs(log_directory, exist_ok=True)
         
         logger = logging.getLogger(self.logger_name)
         logger.setLevel(logging.DEBUG)

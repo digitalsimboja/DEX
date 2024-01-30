@@ -10,4 +10,4 @@ COPY . .
 
 ENV PYTHONPATH="/app:${PYTHONPATH}"
 
-CMD ["python", "adapters/hyperliquid/hyperliquid_job.py"]
+CMD ["python", "jobs/hyperliquid/hyperliquid_job.py"]

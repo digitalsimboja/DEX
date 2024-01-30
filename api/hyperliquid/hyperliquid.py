@@ -45,7 +45,7 @@ class HyperLiquid(DEXExchangeBase):
 
     def __init__(self):
         self._logger_config = SetupLogger(
-            'hyperliquid_api', 'logs/hyperliquid_api.log')
+            'hyperliquid_api', 'logs/hyperliquid/hyperliquid_api.log')
         self._hyperliquid_logger = self._logger_config.create_logger()
         self._hyperliquid_config = self.load_config()
         self._base_rest_url = self._hyperliquid_config["base_url"]
