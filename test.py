@@ -2,6 +2,7 @@ import asyncio
 from api.hyperliquid.hyperliquid import HyperLiquid
 from data_client.hyperliquid.hyperliquid_consumer import HyperliquidConsumer
 from models.enums import Blockchains, Exchanges
+import time
 
 
 async def consume_data():
@@ -19,6 +20,7 @@ async def main():
     try:
         hyperliquid = HyperLiquid()
         await hyperliquid.get_all_mids()
+        time.sleep(30)
         await consume_data()
     except Exception as e:
         print(f"An error occurred: {e}")
