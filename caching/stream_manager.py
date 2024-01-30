@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from redis.asyncio import Redis, ResponseError
 from redis.asyncio.connection import ConnectionPool
 from utilities.parsing import JsonParser
+from utilities.logger import SetupLogger
 
 _MAX_JSON_LEN = 10_000
 
@@ -14,6 +15,9 @@ _MAX_JSON_LEN = 10_000
 class RedisStreamManager(Redis):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger_config = SetupLogger(
+            'redis_stream', 'logs/redis_stream_manager.log')
+        self.logger = self.logger_config.create_logger()
 
     @classmethod
     def from_config(cls, json_config_file_path: Path) -> Redis:
@@ -55,7 +59,9 @@ class RedisStreamManager(Redis):
 
                 # Convert the generic value into a json string
                 json_result = JsonParser.loads(result)
-                
+                self.logger.debug(
+                    "Received the data %s for the stream  %s and publishing to redis ", json_result, stream_name)
+
                 # Publish the message to the specified Redis stream
                 await self.xadd(
                     stream_name,
@@ -75,6 +81,8 @@ class RedisStreamManager(Redis):
         Asynchronously creates a consumer group for a given stream in Redis.
         """
         try:
+            self.logger.debug(
+                'Creating the consumer group with stream name %s with group name %s ', stream_name, group_name)
             await self.xgroup_create(stream_name, group_name, id="0")
         except ResponseError as e:
             if "BUSYGROUP Consumer Group name already exists" not in str(e):

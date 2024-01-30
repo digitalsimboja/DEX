@@ -1,3 +1,4 @@
+import asyncio
 from adapters.dex_adapter_base import RawDataAdapter
 from api.hyperliquid.constants import PATH_TO_HYPERLIQUID
 from caching.stream_manager import RedisStreamManager
@@ -5,9 +6,8 @@ from caching.streams import StreamNameBuilder
 from models.enums import Blockchains, DataType, Exchanges, StreamNames
 import pandas as pd
 import json
-from datetime import datetime
-
 from utilities.common import generate_group_name
+from utilities.logger import SetupLogger
 
 _PATH_TO_REDIS_CONFIG = PATH_TO_HYPERLIQUID / "redis_config.json"
 _redis_stream_manager = RedisStreamManager.from_config(_PATH_TO_REDIS_CONFIG)
@@ -35,7 +35,9 @@ _REDIS_STREAMS = {
 
 class HyperliquidAdapter(RawDataAdapter):
     def __init__(self):
-        pass
+        self.logger_config = SetupLogger(
+            'hyperliquid_adapter', 'logs/hyperliquid_adapter.log')
+        self.logger = self.logger_config.create_logger()
 
     @_redis_stream_manager.publish_result(_REDIS_STREAMS["adapted"][StreamNames.PNL])
     async def get_oracle_prices(self, *args, **kwargs):
@@ -47,29 +49,43 @@ class HyperliquidAdapter(RawDataAdapter):
         Example:
         {"BTC/USD" : 39874.58, "ETH/USD" : 2645.55, "ARB/USD": 1.77}
         """
+        try:
+            stream_name = _REDIS_STREAMS["raw"][StreamNames.PRICES]
+            self.logger.debug(
+                "Reading raw data from redis at Hyperliquid_adapter.get_oracle_prices ")
+            group_name = generate_group_name(stream_name)
+            await _redis_stream_manager.create_redis_consumer_group(
+                stream_name,
+                group_name,
+            )
 
-        stream_name = _REDIS_STREAMS["raw"][StreamNames.PRICES]
-        group_name = await generate_group_name(stream_name)
+            data = await _redis_stream_manager.xreadgroup(
+                streams={stream_name: ">"},
+                consumername="adapter",
+                groupname=group_name,
+                count=1,
+                block=5,
+            )
 
-        await _redis_stream_manager.create_redis_consumer_group(
-            _REDIS_STREAMS["raw"][StreamNames.PRICES],
-            group_name,
-        )
+            if data:
+                self.logger.info(
+                    "Raw data received from redis at Hyperliquid_adapter.get_oracle_prices: %s ", data)
+                # Extract prices from the data
+                prices_data = data[0][1][0][1]
 
-        data = await _redis_stream_manager.xreadgroup(
-            streams={_REDIS_STREAMS["raw"][StreamNames.PRICES]: ">"},
-            consumername="adapter",
-            groupname=group_name,
-            count=1,
-            block=5,
-        )
-        # Extract prices from the data
-        prices_data = data[0][1][0][1]
+                oracle_prices = {f"{ticker.decode()}/USD": float(price.decode())
+                                for ticker, price in prices_data.items()}
+                self.logger.info(
+                    "Publishing adapted data to redis: %s ", json.dumps(oracle_prices))
+                return json.dumps(oracle_prices)
+            else:
+                self.logger.debug(
+                    "No data received yet from redis at Hyperliquid_adapter.get_oracle_prices")
+        except Exception as e:
+            self.logger.error(
+                f"An error occurred while fetching oracle prices: {e}")
+            return None
 
-        oracle_prices = {f"{ticker.decode()}/USD": float(price.decode())
-                         for ticker, price in prices_data.items()}
-
-        return json.dumps(oracle_prices)
 
     async def get_funding_rates(self, *args, **kwargs) -> dict[str, float]:
         pass
@@ -92,3 +108,29 @@ class HyperliquidAdapter(RawDataAdapter):
 
     async def get_order_history(self, account: str, *args, **kwargs) -> pd.DataFrame:
         pass
+
+    async def pool(self, stream_name):
+        self.logger.debug(
+            "Pooling the data with get_oracle_prices currently with stream name %s ", stream_name)
+        while True:
+            try:
+                group_name = generate_group_name(stream_name)
+                await _redis_stream_manager.create_redis_consumer_group(
+                    stream_name,
+                    group_name,
+                )
+
+                data = await _redis_stream_manager.xreadgroup(
+                    streams={stream_name: ">"},
+                    consumername="adapter",
+                    groupname=group_name,
+                    count=1,
+                    block=5,
+                )
+
+                yield data
+
+            except Exception as e:
+                self.logger.debug(
+                    f"An error occurred while pool for data: {e}")
+                continue

@@ -10,6 +10,7 @@ def get_config():
     with open(config_path) as f:
         return json.load(f)
 
-async def generate_group_name(stream_name: str) -> str:
-        current_time = int(time.time())
-        return f"{stream_name}_{current_time}"
+
+def generate_group_name(stream_name: str) -> str:
+    current_time = int(time.time())
+    return f"{stream_name}_{current_time}"

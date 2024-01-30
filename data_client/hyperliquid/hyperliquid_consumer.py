@@ -2,34 +2,18 @@ import os
 from typing import Dict
 import json
 import pandas as pd
-from api.hyperliquid.hyperliquid import HyperLiquid
-from adapters.hyperliquid.hyperliquid_adapter import HyperliquidAdapter
-import logging
-import asyncio
 from data_client.data_client import DataConsumer
 from models.enums import Blockchains, Exchanges, StreamNames
 from utilities.common import generate_group_name
-
-os.makedirs('logs', exist_ok=True)
-
-
-logger = logging.getLogger('hyperliquid_logger')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler('logs/hyperliquid.log')
-
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-
-logger.addHandler(handler)
+from utilities.logger import SetupLogger
 
 
-class HyperliquidClient(DataConsumer):
+class HyperliquidConsumer(DataConsumer):
     def __init__(self, redis_url: str, exchange: Exchanges, blockchain: Blockchains):
         super().__init__(redis_url, exchange, blockchain)
-        self.hyperliquid = HyperLiquid(logger)
-        self.hyperliquid_adapter = HyperliquidAdapter()
+        self.logger_config = SetupLogger(
+            'hyperliquid_data_consumer', 'logs/hyperliquid_data_consumer.log')
+        self.logger = self.logger_config.create_logger()
 
     async def get_oracle_prices(self, *args, **kwargs) -> dict[str, float]:
         """
@@ -40,15 +24,12 @@ class HyperliquidClient(DataConsumer):
         Example:
         {"BTC/USD" : 0.20, "ETH/USD" : -0.05, "ARB/USD": 0.10}
         """
+
         try:
-            # Get the data from external API
-            await self.hyperliquid.get_all_mids()
-            # Adapt the data
-            await self.hyperliquid_adapter.get_oracle_prices()
-            # Read the adapted data
-            # TODO: Use the get_stream_name base function
             stream_name = self.get_stream_name(StreamNames.PNL)
-            group_name = await generate_group_name(stream_name)
+            group_name = generate_group_name(stream_name)
+            self.logger.debug(
+                'Consuming oracle prices from stream %s with group_name %s ', stream_name, group_name)
             await self.redis.create_redis_consumer_group(
                 stream_name,
                 group_name,
@@ -63,10 +44,13 @@ class HyperliquidClient(DataConsumer):
             )
 
             oracle_prices = data[0][1][0][1]
+            self.logger.debug(
+                "Data consumed by get_oracle_prices %s ", oracle_prices)
             return json.dumps(oracle_prices)
 
         except Exception as e:
-            logger.exception("Error occurred : %s", e)
+            self.logger.exception(
+                "Error occurred consuming oracle prices : %s", e)
 
     async def get_funding_rates(self, *args, **kwargs) -> dict[str, float]:
         pass
@@ -88,14 +72,3 @@ class HyperliquidClient(DataConsumer):
 
     async def get_order_history(self, account: str, *args, **kwargs) -> pd.DataFrame:
         pass
-
-
-async def main():
-    client = HyperliquidClient(redis_url="redis://redis:6379/0",
-                               exchange=Exchanges.HYPERLIQUID,
-                               blockchain=Blockchains.COSMOS)
-    data = await client.get_oracle_prices()
-    logger.debug("Read adapated data from oracle %s", data)
-
-if __name__ == '__main__':
-    asyncio.run(main())

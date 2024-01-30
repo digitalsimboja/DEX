@@ -14,6 +14,7 @@ from models.enums import Blockchains, DataType, Exchanges, StreamNames
 from requests import Response
 from utilities.common import get_config
 from utilities.parsing import JsonParser
+from utilities.logger import SetupLogger
 
 
 _PATH_TO_REDIS_CONFIG = PATH_TO_HYPERLIQUID / "redis_config.json"
@@ -42,16 +43,17 @@ class HyperLiquid(DEXExchangeBase):
 
     _confi_data = get_config()
 
-    def __init__(self, logger: logging.Logger):
-        super().__init__(
-            api_key=self._confi_data["api_key"],
-            api_qps=self._confi_data["api_qps"],
-            logger=logger
-        )
+    def __init__(self):
+        self._logger_config = SetupLogger(
+            'hyperliquid_api', 'logs/hyperliquid_api.log')
+        self._hyperliquid_logger = self._logger_config.create_logger()
         self._hyperliquid_config = self.load_config()
         self._base_rest_url = self._hyperliquid_config["base_url"]
         self._base_websocket_url = self._hyperliquid_config["websocket_url"]
         self._rest_endpoint_urls = self._hyperliquid_config["endpoints"]
+
+        super().__init__(
+            api_key=self._confi_data["api_key"], api_qps=self._confi_data["api_qps"], logger=self._hyperliquid_logger)
 
     @property
     def base_rest_url(self) -> str:
