@@ -67,27 +67,37 @@ Create a `config.json` file and add the following contents:
 The above configuration are not to be used for production
 
 5. Building and Running Docker Container
-   Build the Docker container using the provided Dockerfile:
+Build the Docker container using the provided Dockerfile:
 
 ```
 docker compose up -d --build
 ```
 
 6. Run the docker container
-   Login to the docker container built with the image name `contractor_case_study-main-hyperliquid-marketdata-adapter-1` using the `CONTAINER ID` created
-
-7. Executing the Test Script
-   After logging in to the Docker container, you can execute the test.py script as follows:
+Login to the docker container built with the image name `contractor_case_study-main-hyperliquid-marketdata-adapter-1` using the `CONTAINER ID` created
 
 ```
+docker exec -it <CONTAINER_ID> /bin/bash
+```
+
+7. Executing the Test Script
+After logging in to the Docker container, you can execute the test.py script as follows:
+
+```
+
 python test.py
+
 ```
 
 Wait for about 20 seconds for the script to complete its execution.
 
 8. Repeat Execution
-   After the initial execution, you can run the test.py script again to consume the data after a short interval:
+After the initial execution, you can run the test.py script again to consume the data after a short interval:
 
 ```
+
 python test.py
+
 ```
+
+
