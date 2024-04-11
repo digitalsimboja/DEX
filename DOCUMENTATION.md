@@ -10,7 +10,7 @@ Follow the steps below to set up and run the DEX Integration project:
    Clone the DEX Integration repository from the provided location:
 
 ```
-https://github.com/digitalsimboja/lhava
+https://github.com/digitalsimboja/DEX
 ```
 
 2. Navigate to the Project Directory
@@ -18,7 +18,7 @@ https://github.com/digitalsimboja/lhava
 Change your current directory to the root directory of the cloned repository:
 
 ```
-cd lhava
+cd DEX
 ```
 
 3. Docker Setup
